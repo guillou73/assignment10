@@ -11,6 +11,13 @@ pipeline {
     }
 
     stages {
+        stage('Prepare Environment') {
+            steps {
+                script {
+                    sh 'sudo chmod 777 /var/run/docker.sock'
+                }
+            }
+        }
         stage('Git verify') {
             steps {
                 script {
