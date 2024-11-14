@@ -8,7 +8,11 @@ pipeline {
         AWS_REGION = "eu-west-2"
         SSH_KEY_CRED_ID = 'jenkins-agent'  // Credential ID for SSH key to  access EC2
     }
-    
+    stages {
+        stage('Git verify') {
+            steps {
+                script{
+                    sh 'git --version'
     stages {
         stage('Checkout') {
             steps {
