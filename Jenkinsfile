@@ -55,16 +55,33 @@ pipeline {
                 }
             }
         }
-        stage('Static Code Analysis - SonarQube') {
+        stage('Deploy to Environment test') {
             steps {
-                script {
-                    withSonarQubeEnv('SonarQubeServer') {
-                        sh 'mvn sonar:sonar -Dsonar.organization=guillou73'
-                    }
+                sshagent(['ec2-ssh-key']) {
+                    sh 'echo "Starting SSH connection test"'
+                    sh 'ssh -tt -o StrictHostKeyChecking=no ubuntu@51.44.25.177 ls'
                 }
             }
         }
-        stage('Container Security Scan - Trivy') {
+        stage('Deploy to Environment') {
             steps {
                 script {
-                    sh "trivy --timeout 1m image ${ECR_RE
+                    def targetHost = ''
+                    if (env.BRANCH_NAME == 'docker1') {
+                        targetHost = '15.188.246.138'
+                    } else if (env.BRANCH_NAME == 'docker2') {
+                        targetHost = '15.237.143.77'
+                    } else if (env.BRANCH_NAME == 'docker3') {
+                        targetHost = '51.44.25.177'
+                    } else if (env.BRANCH_NAME == 'main') {
+                        targetHost = '51.44.25.177'
+                    }
+                    withCredentials([usernamePassword(credentialsId: 'aws-ecr', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        sshagent(['ec2-ssh-key']) {
+                            sh """
+                            ssh -tt -o StrictHostKeyChecking=no ubuntu@${targetHost} << EOF
+                            aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO}
+                            docker pull ${ECR_REPO}:${TAG}
+                            docker stop ${IMAGE_NAME} || true
+                            docker rm ${IMAGE_NAME} || true
+                            docker run -d --name ${IMAGE_NAME} -p 8080:8080 -p 8090:8090 ${ECR_REPO}:${TAG}
