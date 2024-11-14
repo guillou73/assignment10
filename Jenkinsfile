@@ -13,7 +13,10 @@ pipeline {
     stages {
         stage('Prepare Environment') {
             steps {
-                script {  
+                script {
+                    // Preparation steps (if needed)
+                }
+            }
         }
         stage('Git verify') {
             steps {
@@ -125,18 +128,4 @@ EOF
         success {
             emailext(
                 subject: "Jenkins Job - Success Notification",
-                body: "Hello,\n\nThe Jenkins job completed successfully. The Docker image '${env.IMAGE_NAME}:${env.TAG}' has been successfully pushed to ECR and deployed.\n\nBest regards,\nJenkins",
-                recipientProviders: [[$class: 'DevelopersRecipientProvider']],
-                to: "guyseutcheu@gmail.com"
-            )
-        }
-        failure {
-            emailext(
-                subject: "Jenkins Job - Failure Notification",
-                body: "Hello,\n\nThe Jenkins job failed during the process. Please check the logs for details.\n\nBest regards,\nJenkins",
-                recipientProviders: [[$class: 'DevelopersRecipientProvider']],
-                to: "guyseutcheu@gmail.com"
-            )
-        }
-    }
-}
+                body: "Hello,\n\nThe Jenkins job completed successfully. The Docker image '${env.IMAGE_NAME}:${env.TAG}' has
