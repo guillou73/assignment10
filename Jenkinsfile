@@ -14,7 +14,7 @@ pipeline {
         stage('Prepare Environment') {
             steps {
                 script {
-                    // Preparation steps (if needed)
+                    // Preparation steps if needed
                 }
             }
         }
@@ -48,7 +48,14 @@ pipeline {
                 success {
                     emailext(
                         subject: "Jenkins Job - Docker Image Pushed to ECR Successfully",
-                        body: "Hello,\n\nThe Docker image '${env.IMAGE_NAME}:${env.TAG}' has been successfully pushed to ECR.\n\nBest regards,\nJenkins",
+                        body: """
+                            Hello,
+
+                            The Docker image '${env.IMAGE_NAME}:${env.TAG}' has been successfully pushed to ECR.
+
+                            Best regards,
+                            Jenkins
+                        """,
                         recipientProviders: [[$class: 'DevelopersRecipientProvider']],
                         to: "guymonthe2001@yahoo.fr"
                     )
@@ -74,7 +81,14 @@ pipeline {
                 success {
                     emailext(
                         subject: "Trivy scan result",
-                        body: "Hello,\n\nTrivy scan result in attachment.\n\nBest regards,\nJenkins",
+                        body: """
+                            Hello,
+
+                            Trivy scan result in attachment.
+
+                            Best regards,
+                            Jenkins
+                        """,
                         recipientProviders: [[$class: 'DevelopersRecipientProvider']],
                         to: "guymonthe2001@yahoo.fr",
                         attachmentsPattern: 'trivyscan.txt'
@@ -128,4 +142,32 @@ EOF
         success {
             emailext(
                 subject: "Jenkins Job - Success Notification",
-                body: "Hello,\n\nThe Jenkins job completed successfully. The Docker image '${env.IMAGE_NAME}:${env.TAG}' has
+                body: """
+                    Hello,
+
+                    The Jenkins job completed successfully. The Docker image '${env.IMAGE_NAME}:${env.TAG}' has been successfully pushed to ECR and deployed.
+
+                    Best regards,
+                    Jenkins
+                """,
+                recipientProviders: [[$class: 'DevelopersRecipientProvider']],
+                to: "guyseutcheu@gmail.com"
+            )
+        }
+        failure {
+            emailext(
+                subject: "Jenkins Job - Failure Notification",
+                body: """
+                    Hello,
+
+                    The Jenkins job failed during the process. Please check the logs for details.
+
+                    Best regards,
+                    Jenkins
+                """,
+                recipientProviders: [[$class: 'DevelopersRecipientProvider']],
+                to: "guyseutcheu@gmail.com"
+            )
+        }
+    }
+}
