@@ -27,7 +27,6 @@ pipeline {
             steps {
                 script {
                     docker.build("${env.ECR_REPO}:${env.TAG}")
-                    sh 'sudo chmod 777 /var/run/docker.sock'
                 }
             }
         }
@@ -36,7 +35,6 @@ pipeline {
                 withAWS(credentials: 'aws-credentials', region: "${AWS_REGION}") {
                     sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO}"
                     sh "docker push ${ECR_REPO}:${TAG}"
-                    sh 'sudo chmod 777 /var/run/docker.sock'
                 }
             }
             post {
@@ -69,73 +67,4 @@ pipeline {
         stage('Container Security Scan - Trivy') {
             steps {
                 script {
-                    sh "trivy --timeout 1m image ${ECR_REPO}:${TAG} > 'trivyscan.txt'"
-                    sh 'sudo chmod 777 /var/run/docker.sock'
-                }
-            }
-            post {
-                success {
-                    emailext(
-                        subject: "Trivy scan result",
-                        body: """
-                            Hello,
-
-                            Trivy scan result in attachment.
-
-                            Best regards,
-                            Jenkins
-                        """,
-                        recipientProviders: [[$class: 'DevelopersRecipientProvider']],
-                        to: "guymonthe2001@yahoo.fr",
-                        attachmentsPattern: 'trivyscan.txt'
-                    )
-                }
-            }
-        }
-        stage('Deploy to Environment test') {
-            steps {
-                sshagent(['ec2-ssh-key']) {
-                    sh 'echo "Starting SSH connection test"'
-                    sh 'ssh -tt -o StrictHostKeyChecking=no ubuntu@51.44.25.177 ls'
-                }
-            }
-        }
-        stage('Deploy to Environment') {
-            steps {
-                script {
-                    def targetHost = ''
-                    if (env.BRANCH_NAME == 'docker1') {
-                        targetHost = '15.188.246.138'
-                    } else if (env.BRANCH_NAME == 'docker2') {
-                        targetHost = '15.237.143.77'
-                    } else if (env.BRANCH_NAME == 'docker3') {
-                        targetHost = '51.44.25.177'
-                    } else if (env.BRANCH_NAME == 'main') {
-                        targetHost = '51.44.25.177'
-                    }
-                    withCredentials([usernamePassword(credentialsId: 'aws-ecr', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                        sshagent(['ec2-ssh-key']) {
-                            sh """
-                            ssh -tt -o StrictHostKeyChecking=no ubuntu@${targetHost} << EOF
-                            aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO}
-                            docker pull ${ECR_REPO}:${TAG}
-                            docker stop ${IMAGE_NAME} || true
-                            docker rm ${IMAGE_NAME} || true
-                            docker run -d --name ${IMAGE_NAME} -p 8080:8080 -p 8090:8090 ${ECR_REPO}:${TAG}
-                            sudo chmod 777 /var/run/docker.sock
-                            exit 0
-EOF
-                            """
-                        }
-                    }
-                }
-            }
-        }
-    }
-    post {
-        always {
-            cleanWs()  // Clean up workspace after the build
-        }
-        success {
-            emailext(
-                subject: "Jenkins Job - Success Notification
+                    sh "trivy --timeout 1m image ${ECR_RE
