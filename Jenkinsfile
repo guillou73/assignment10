@@ -10,13 +10,13 @@ pipeline {
         AWS_REGION = "eu-west-2"
     }
 
-    stages {//
-        stage('Prepare Environment') {//
-            steps {//
-                script {//
+    stages {
+        stage('Prepare Environment') {
+            steps {
+                script {
                     // Preparation steps if needed
-                }//
-            }//
+                }
+            }
         }
         stage('Git verify') {
             steps {
