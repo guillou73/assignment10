@@ -8,6 +8,7 @@ pipeline {
         IMAGE_NAME = 'ecr-image'
         TAG = "${env.BRANCH_NAME}-${env.BUILD_ID}"
         AWS_REGION = "eu-west-2"
+    
     }
 
     stages {
