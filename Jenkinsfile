@@ -11,13 +11,6 @@ pipeline {
     }
 
     stages {
-        stage('Prepare Environment') {
-            steps {
-                script {
-                    sh 'sudo chmod 777 /var/run/docker.sock'
-                }
-            }
-        }
         stage('Git verify') {
             steps {
                 script {
@@ -34,6 +27,7 @@ pipeline {
             steps {
                 script {
                     docker.build("${env.ECR_REPO}:${env.TAG}")
+                    sh 'sudo chmod 777 /var/run/docker.sock'
                 }
             }
         }
@@ -42,6 +36,7 @@ pipeline {
                 withAWS(credentials: 'aws-credentials', region: "${AWS_REGION}") {
                     sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO}"
                     sh "docker push ${ECR_REPO}:${TAG}"
+                    sh 'sudo chmod 777 /var/run/docker.sock'
                 }
             }
             post {
@@ -75,6 +70,7 @@ pipeline {
             steps {
                 script {
                     sh "trivy --timeout 1m image ${ECR_REPO}:${TAG} > 'trivyscan.txt'"
+                    sh 'sudo chmod 777 /var/run/docker.sock'
                 }
             }
             post {
@@ -98,7 +94,7 @@ pipeline {
         }
         stage('Deploy to Environment test') {
             steps {
-                sshagent(['jenkins-agent']) {
+                sshagent(['ec2-ssh-key']) {
                     sh 'echo "Starting SSH connection test"'
                     sh 'ssh -tt -o StrictHostKeyChecking=no ubuntu@51.44.25.177 ls'
                 }
@@ -118,7 +114,7 @@ pipeline {
                         targetHost = '51.44.25.177'
                     }
                     withCredentials([usernamePassword(credentialsId: 'aws-ecr', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                        sshagent(['jenkins-agent']) {
+                        sshagent(['ec2-ssh-key']) {
                             sh """
                             ssh -tt -o StrictHostKeyChecking=no ubuntu@${targetHost} << EOF
                             aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO}
@@ -126,6 +122,7 @@ pipeline {
                             docker stop ${IMAGE_NAME} || true
                             docker rm ${IMAGE_NAME} || true
                             docker run -d --name ${IMAGE_NAME} -p 8080:8080 -p 8090:8090 ${ECR_REPO}:${TAG}
+                            sudo chmod 777 /var/run/docker.sock
                             exit 0
 EOF
                             """
@@ -141,33 +138,4 @@ EOF
         }
         success {
             emailext(
-                subject: "Jenkins Job - Success Notification",
-                body: """
-                    Hello,
-
-                    The Jenkins job completed successfully. The Docker image '${env.IMAGE_NAME}:${env.TAG}' has been successfully pushed to ECR and deployed.
-
-                    Best regards,
-                    Jenkins
-                """,
-                recipientProviders: [[$class: 'DevelopersRecipientProvider']],
-                to: "guyseutcheu@gmail.com"
-            )
-        }
-        failure {
-            emailext(
-                subject: "Jenkins Job - Failure Notification",
-                body: """
-                    Hello,
-
-                    The Jenkins job failed during the process. Please check the logs for details.
-
-                    Best regards,
-                    Jenkins
-                """,
-                recipientProviders: [[$class: 'DevelopersRecipientProvider']],
-                to: "guyseutcheu@gmail.com"
-            )
-        }
-    }
-}
+                subject: "Jenkins Job - Success Notification
