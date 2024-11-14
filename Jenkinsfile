@@ -98,7 +98,7 @@ pipeline {
         }
         stage('Deploy to Environment test') {
             steps {
-                sshagent(['ec2-ssh-key']) {
+                sshagent(['jenkins-agent']) {
                     sh 'echo "Starting SSH connection test"'
                     sh 'ssh -tt -o StrictHostKeyChecking=no ubuntu@51.44.25.177 ls'
                 }
@@ -118,7 +118,7 @@ pipeline {
                         targetHost = '51.44.25.177'
                     }
                     withCredentials([usernamePassword(credentialsId: 'aws-ecr', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                        sshagent(['ec2-ssh-key']) {
+                        sshagent(['jenkins-agent']) {
                             sh """
                             ssh -tt -o StrictHostKeyChecking=no ubuntu@${targetHost} << EOF
                             aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO}
