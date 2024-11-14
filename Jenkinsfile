@@ -13,21 +13,7 @@ pipeline {
     stages {
         stage('Prepare Environment') {
             steps {
-                script {
-                    sh '''
-                        if id "jenkins" &>/dev/null; then
-                            echo "User jenkins exists"
-                        else
-                            echo "User jenkins does not exist. Creating user."
-                            sudo useradd -m -s /bin/bash jenkins
-                            sudo passwd -d jenkins
-                        fi
-                        sudo usermod -aG docker jenkins
-                        sudo systemctl restart jenkins
-                        sudo chmod 666 /var/run/docker.sock
-                    '''
-                }
-            }
+                script {  
         }
         stage('Git verify') {
             steps {
