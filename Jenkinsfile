@@ -11,6 +11,13 @@ pipeline {
     }
 
     stages {
+        stage('Prepare Environment') {
+            steps {
+                script {
+                    sh 'apt update && apt install -y docker.io'
+                }
+            }
+        }
         stage('Git verify') {
             steps {
                 script {
@@ -39,7 +46,6 @@ pipeline {
             }
             post {
                 success {
-                    // Send email notification after successful image push to ECR
                     emailext(
                         subject: "Jenkins Job - Docker Image Pushed to ECR Successfully",
                         body: "Hello,\n\nThe Docker image '${env.IMAGE_NAME}:${env.TAG}' has been successfully pushed to ECR.\n\nBest regards,\nJenkins",
