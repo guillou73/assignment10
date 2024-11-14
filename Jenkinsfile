@@ -14,7 +14,8 @@ pipeline {
         stage('Prepare Environment') {
             steps {
                 script {
-                    sh 'apt update && apt install -y docker.io'
+                    // Update package lists and install Docker and AWS CLI with sudo
+                    sh 'sudo apt update && sudo apt install -y docker.io awscli'
                 }
             }
         }
