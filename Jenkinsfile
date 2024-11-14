@@ -13,6 +13,9 @@ pipeline {
             steps {
                 script{
                     sh 'git --version'
+                }
+            }
+        }
     stages {
         stage('Checkout') {
             steps {
