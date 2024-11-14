@@ -1,12 +1,11 @@
-
 pipeline {
     agent {
-    label 'slave'
+    label 'docker'
     }
 
     environment {
-        ECR_REPO = '866934333672.dkr.ecr.eu-west-2.amazonaws.com/adityaimages'
-        IMAGE_NAME = 'app-image'
+        ECR_REPO = '866934333672.dkr.ecr.eu-west-3.amazonaws.com/guy-ecr'
+        IMAGE_NAME = 'ecr-image'
         TAG = "${env.BRANCH_NAME}-${env.BUILD_ID}"
         AWS_REGION = "eu-west-2"
     }
@@ -21,7 +20,7 @@ pipeline {
         } //stage
         stage('Checkout') {
             steps {
-                git branch: "${env.BRANCH_NAME}", url: 'https://github.com/ADITYA1234556/docker-jenkins.git', credentialsId: 'github-token'
+                git branch: "${env.main}", url: 'https://github.com/guillou73/assignment10.git', credentialsId: 'jenkins-pat'
             } //steps
         } //stage
         stage('Build Docker Image') {
@@ -33,10 +32,10 @@ pipeline {
         } //stage
         stage('Push to ECR') {
             steps {
-                withAWS(credentials: 'aws-credentials', region: "${AWS_REGION}")
+                withAWS(credentials: 'aws-credentials', region: "${eu-west-2}")
                 {
-                    sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${env.ECR_REPO}"
-                    sh "docker push ${env.ECR_REPO}:${env.TAG}"
+                    sh "aws ecr get-login-password --region ${eu-west-2} | docker login --username AWS --password-stdin ${env.866934333672.dkr.ecr.eu-west-3.amazonaws.com/guy-ecr }"
+                    sh "docker push ${env.866934333672.dkr.ecr.eu-west-3.amazonaws.com/guy-ecr }:${env.TAG}"
                 } //withAWS
             } //steps
                 post {
@@ -46,7 +45,7 @@ pipeline {
                         subject: "Jenkins Job - Docker Image Pushed to ECR Successfully",
                         body: "Hello,\n\nThe Docker image '${env.IMAGE_NAME}:${env.TAG}' has been successfully pushed to ECR.\n\nBest regards,\nJenkins",
                         recipientProviders: [[$class: 'DevelopersRecipientProvider']],
-                        to: "m.ehtasham.azhar@gmail.com"
+                        to: "guymonthe2001@yahoo.fr"
                     )
                 } //success
             } //post
@@ -55,7 +54,7 @@ pipeline {
             steps {
                 script {
                     withSonarQubeEnv('SonarQubeServer') {
-                        sh 'mvn sonar:sonar -Dsonar.organization=aditya1234556'
+                        sh 'mvn sonar:sonar -Dsonar.organization=guillou73'
                     } //withSonarQubeEnv
                 } //script
             } //steps
@@ -73,7 +72,7 @@ pipeline {
                         subject: "Trivy scan result",
                         body: "Hello, \n Trivy scan result in attachment \n Best regards, \n Jenkins \n ",
                         recipientProviders: [[$class: 'DevelopersRecipientProvider']],
-                        to: "m.ehtasham.azhar@gmail.com",
+                        to: "guymonthe2001@yahoo.fr",
                         attachmentsPattern: 'trivyscan.txt'
                     )
                 } //success
@@ -84,7 +83,7 @@ pipeline {
             steps {
                     sshagent(['ec2-ssh-key']) {
                     sh 'echo "Starting SSH connection test"'
-                    sh 'ssh -tt -o StrictHostKeyChecking=no ubuntu@35.179.95.72 ls'
+                    sh 'ssh -tt -o StrictHostKeyChecking=no ubuntu@51.44.25.177 ls'
                 } //sshagent
             } //steps
         } //stage
@@ -93,14 +92,14 @@ pipeline {
             steps {
                 script {
                     def targetHost = ''
-                    if (env.BRANCH_NAME == 'DEV') {
-                        targetHost = '13.42.5.135'
-                    } else if (env.BRANCH_NAME == 'STAGING') {
-                        targetHost = '35.179.105.161'
-                    } else if (env.BRANCH_NAME == 'PROD') {
-                        targetHost = '35.179.95.72'
-                    } else if (env.BRANCH_NAME == 'master') {
-                        targetHost = '35.179.95.72'
+                    if (env.BRANCH_NAME == 'docker1') {
+                        targetHost = '15.188.246.138'
+                    } else if (env.BRANCH_NAME == 'docker2') {
+                        targetHost = '15.237.143.77'
+                    } else if (env.BRANCH_NAME == 'docker3') {
+                        targetHost = '51.44.25.177'
+                    } else if (env.BRANCH_NAME == 'main') {
+                        targetHost = '51.44.25.177'
                     }
                     withCredentials([usernamePassword(credentialsId: 'aws-ecr', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
                     sshagent(['ec2-ssh-key']){
