@@ -11,13 +11,6 @@ pipeline {
     }
 
     stages {
-        stage('Prepare Environment') {
-            steps {
-                script {
-                    // Preparation steps if needed
-                }
-            }
-        }
         stage('Git verify') {
             steps {
                 script {
