@@ -85,3 +85,48 @@ pipeline {
                             docker stop ${IMAGE_NAME} || true
                             docker rm ${IMAGE_NAME} || true
                             docker run -d --name ${IMAGE_NAME} -p 8080:8080 -p 8090:8090 ${ECR_REPO}:${TAG}
+                            exit 0
+EOF
+                            """
+                        }
+                    }
+                }
+            }
+        }
+    }
+    post {
+        always {
+            cleanWs()  // Clean up workspace after the build
+        }
+        success {
+            emailext(
+                subject: "Jenkins Job - Success Notification",
+                body: """
+                    Hello,
+
+                    The Jenkins job completed successfully. The Docker image '${env.IMAGE_NAME}:${env.TAG}' has been successfully pushed to ECR and deployed.
+
+                    Best regards,
+                    Jenkins
+                """,
+                recipientProviders: [[$class: 'DevelopersRecipientProvider']],
+                to: "guyseutcheu@gmail.com"
+            )
+        }
+        failure {
+            emailext(
+                subject: "Jenkins Job - Failure Notification",
+                body: """
+                    Hello,
+
+                    The Jenkins job failed during the process. Please check the logs for details.
+
+                    Best regards,
+                    Jenkins
+                """,
+                recipientProviders: [[$class: 'DevelopersRecipientProvider']],
+                to: "guyseutcheu@gmail.com"
+            )
+        }
+    }
+}
