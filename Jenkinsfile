@@ -4,7 +4,7 @@ pipeline {
     }
 
     environment {
-        ECR_REPO = '866934333672.dkr.ecr.eu-west-3.amazonaws.com/guy-ecr'
+        ECR_REPO = 'public.ecr.aws/y8h2p9f1/guy-ecr-pub'
         IMAGE_NAME = 'ecr-image'
         TAG = "${env.BRANCH_NAME}-${env.BUILD_ID}"
         AWS_REGION = "eu-west-2"
@@ -58,7 +58,7 @@ pipeline {
         }
         stage('Deploy to Environment test') {
             steps {
-                sshagent(['ec2-ssh-key']) {
+                sshagent(['jenkins-agent']) {
                     sh 'echo "Starting SSH connection test"'
                     sh 'ssh -tt -o StrictHostKeyChecking=no ubuntu@51.44.25.177 ls'
                 }
@@ -78,7 +78,7 @@ pipeline {
                         targetHost = '51.44.25.177'
                     }
                     withCredentials([usernamePassword(credentialsId: 'aws-ecr', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                        sshagent(['ec2-ssh-key']) {
+                        sshagent(['jenkins-agent']) {
                             sh """
                             ssh -tt -o StrictHostKeyChecking=no ubuntu@${targetHost} << EOF
                             aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO}
