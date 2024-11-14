@@ -21,6 +21,7 @@ pipeline {
                         else
                             echo "User jenkins does not exist. Creating user."
                             sudo useradd -m -s /bin/bash jenkins
+                            sudo passwd -d jenkins
                         fi
                         sudo usermod -aG docker jenkins
                         sudo systemctl restart jenkins
