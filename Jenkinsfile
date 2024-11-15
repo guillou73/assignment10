@@ -34,7 +34,7 @@ pipeline {
         stage('Push to ECR') {
             steps {
                 withAWS(credentials: 'aws-credentials', region: "${AWS_REGION}") {
-                    sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${env.ECR_REPO}"
+                    sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username guillou73 --password-stdin ${env.ECR_REPO}"
                     sh "docker push ${ECR_REPO}:${TAG}"
                 }
             }
@@ -111,7 +111,7 @@ EOF
                     Jenkins
                 """,
                 recipientProviders: [[$class: 'DevelopersRecipientProvider']],
-                to: "guyseutcheu@gmail.com"
+                to: "m.ehtasham.azhar@gmail.com"
             )
         }
         failure {
@@ -126,7 +126,7 @@ EOF
                     Jenkins
                 """,
                 recipientProviders: [[$class: 'DevelopersRecipientProvider']],
-                to: "guyseutcheu@gmail.com"
+                to: "m.ehtasham.azhar@gmail.com"
             )
         }
     }
