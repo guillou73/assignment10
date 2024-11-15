@@ -50,10 +50,10 @@ pipeline {
                             Jenkins
                         """,
                         to: "m.ehtasham.azhar@gmail.com"
-                    )
-                }
-            }
-        }
+                    )//
+                }//
+            }//
+        }//
         stage('Deploy to Environment test') {
             steps {
                 sshagent(['jenkins-agent']) {
