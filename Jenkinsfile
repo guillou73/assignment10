@@ -59,9 +59,9 @@ pipeline {
                 sshagent(['jenkins-agent']) {
                     sh 'echo "Starting SSH connection test"'
                     sh 'ssh -tt -o StrictHostKeyChecking=no ubuntu@15.188.246.138 ls'
-                }
-            }
-        }
+                }//
+            }//
+        }//
         stage('Deploy to Environment') {
             steps {
                 script {
