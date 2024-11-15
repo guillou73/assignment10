@@ -56,23 +56,23 @@ pipeline {
             }//
         }//
         stage('Static Code Analysis - SonarQube') {
-            steps {
-                script {
+            steps {//
+                script {//
                     withSonarQubeEnv('SonarQubeServer') {
                         sh 'mv sonar:sonar'
                     }//
                 }//
             }//
-        }
+        }//
         stage('Container Security Scan - Trivy') {
-            steps {
-                script {
+            steps {//
+                script {//
                     sh "trivy --timeout 1m image ${ECR_REPO}:${TAG} > 'trivyscan.txt'"
-                }
-            }
-            post {
-                success {
-                    emailext(
+                }//
+            }//
+            post {//
+                success {//
+                    emailext(//
                         subject: "Trivy scan result",
                         body: "Hello,\nTrivy scan result in attachment.\nBest regards,\nJenkins",
                         recipientProviders: [[$class: 'DevelopersRecipientProvider']],
