@@ -49,7 +49,6 @@ pipeline {
                             Best regards,
                             Jenkins
                         """,
-                        recipientProviders: [[$class: 'DevelopersRecipientProvider']],
                         to: "m.ehtasham.azhar@gmail.com"
                     )
                 }
@@ -109,7 +108,6 @@ EOF
                     Best regards,
                     Jenkins
                 """,
-                recipientProviders: [[$class: 'DevelopersRecipientProvider']],
                 to: "m.ehtasham.azhar@gmail.com"
             )
         }
@@ -124,7 +122,6 @@ EOF
                     Best regards,
                     Jenkins
                 """,
-                recipientProviders: [[$class: 'DevelopersRecipientProvider']],
                 to: "m.ehtasham.azhar@gmail.com"
             )
         }
