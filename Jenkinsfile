@@ -8,7 +8,6 @@ pipeline {
         IMAGE_NAME = 'app-image'
         TAG = "${env.BRANCH_NAME}-${env.BUILD_ID}"
         AWS_REGION = "eu-west-3"
-    
     }
 
     stages {
@@ -16,28 +15,28 @@ pipeline {
             steps {
                 script {
                     sh 'git --version'
-                }//
-            }//
-        }//
+                }
+            }
+        }
         stage('Checkout') {
             steps {
                 git branch: "${env.BRANCH_NAME}", url: 'https://github.com/guillou73/assignment10.git', credentialsId: 'jenkins-pat'
-            }//
-        }//
+            }
+        }
         stage('Build Docker Image') {
             steps {
                 script {
                     docker.build("${env.ECR_REPO}:${env.TAG}")
-                }//
-            }//
-        }//
+                }
+            }
+        }
         stage('Push to ECR') {
             steps {
                 withAWS(credentials: 'aws-credentials', region: "${AWS_REGION}") {
-                    sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username  --password-stdin ${env.ECR_REPO}"
+                    sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${env.ECR_REPO}"
                     sh "docker push ${ECR_REPO}:${TAG}"
-                }//
-            }//
+                }
+            }
             post {
                 success {
                     emailext(
@@ -52,56 +51,46 @@ pipeline {
                         """,
                         recipientProviders: [[$class: 'DevelopersRecipientProvider']],
                         to: "m.ehtasham.azhar@gmail.com"
-                    )//
-                }//
-            }//
-        }//
+                    )
+                }
+            }
+        }
         stage('Static Code Analysis - SonarQube') {
             steps {
                 script {
                     withSonarQubeEnv('SonarQubeServer') {
                         sh 'mvn sonar:sonar -Dsonar.organization=guillou73'
-                }//
-            }//
-        }//
-         stage('Container Security Scan - Trivy') {
+                    }
+                }
+            }
+        }
+        stage('Container Security Scan - Trivy') {
             steps {
                 script {
                     sh "trivy --timeout 1m image ${ECR_REPO}:${TAG} > 'trivyscan.txt'"
-                } //script
-            } //steps
+                }
+            }
             post {
-                success{
+                success {
                     emailext(
                         subject: "Trivy scan result",
-                        body: "Hello, \n Trivy scan result in attachment \n Best regards, \n Jenkins \n ",
+                        body: "Hello,\nTrivy scan result in attachment.\nBest regards,\nJenkins",
                         recipientProviders: [[$class: 'DevelopersRecipientProvider']],
                         to: "m.ehtasham.azhar@gmail.com",
                         attachmentsPattern: 'trivyscan.txt'
-            stage('Container Security Scan - Trivy') {
+                    )
+                }
+            }
+        }
+        stage('Deploy to Environment test') {
             steps {
-                script {
-                    sh "trivy --timeout 1m image ${ECR_REPO}:${TAG} > 'trivyscan.txt'"
-                } //script
-            } //steps
-            post {
-                success{
-                    emailext(
-                        subject: "Trivy scan result",
-                        body: "Hello, \n Trivy scan result in attachment \n Best regards, \n Jenkins \n ",
-                        recipientProviders: [[$class: 'DevelopersRecipientProvider']],
-                        to: "m.ehtasham.azhar@gmail.com",
-                        attachmentsPattern: 'trivyscan.txt'
-                        stage('Deploy to Environment test') {
-            steps {
-                    sshagent(['jenkins-agent']) {
+                sshagent(['jenkins-agent']) {
                     sh 'echo "Starting SSH connection test"'
                     sh 'ssh -tt -o StrictHostKeyChecking=no ubuntu@15.188.246.138 ls'
-                } //sshagent
-            } //steps
-        } //stage
-
-    stage('Deploy to Environment') {
+                }
+            }
+        }
+        stage('Deploy to Environment') {
             steps {
                 script {
                     def targetHost = ''
