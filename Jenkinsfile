@@ -51,18 +51,18 @@ pipeline {
                         """,
                         recipientProviders: [[$class: 'DevelopersRecipientProvider']],
                         to: "m.ehtasham.azhar@gmail.com"
-                    )
-                }
-            }
-        }
+                    )//
+                }//
+            }//
+        }//
         stage('Static Code Analysis - SonarQube') {
             steps {
                 script {
                     withSonarQubeEnv('SonarQubeServer') {
                         sh 'mv sonar:sonar'
-                    }
-                }
-            }
+                    }//
+                }//
+            }//
         }
         stage('Container Security Scan - Trivy') {
             steps {
