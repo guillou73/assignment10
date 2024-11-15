@@ -51,30 +51,37 @@ pipeline {
                         """,
                         recipientProviders: [[$class: 'DevelopersRecipientProvider']],
                         to: "m.ehtasham.azhar@gmail.com"
-                    )//
-                }//
-            }//
-        }//
+                    )
+                }
+            }
+        }
         stage('Static Code Analysis - SonarQube') {
-            steps {//
-                script {//
+            steps {
+                script {
                     withSonarQubeEnv('SonarQubeServer') {
-                        sh 'mv sonar:sonar'
-                    }//
-                }//
-            }//
-        }//
+                        sh 'mvn sonar:sonar'
+                    }
+                }
+            }
+        }
         stage('Container Security Scan - Trivy') {
-            steps {//
-                script {//
+            steps {
+                script {
                     sh "trivy --timeout 1m image ${ECR_REPO}:${TAG} > 'trivyscan.txt'"
-                }//
-            }//
-            post {//
-                success {//
-                    emailext(//
+                }
+            }
+            post {
+                success {
+                    emailext(
                         subject: "Trivy scan result",
-                        body: "Hello,\nTrivy scan result in attachment.\nBest regards,\nJenkins",
+                        body: """
+                            Hello,
+
+                            Trivy scan result in attachment.
+
+                            Best regards,
+                            Jenkins
+                        """,
                         recipientProviders: [[$class: 'DevelopersRecipientProvider']],
                         to: "m.ehtasham.azhar@gmail.com",
                         attachmentsPattern: 'trivyscan.txt'
