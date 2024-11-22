@@ -1,9 +1,26 @@
 pipeline {
-    agent { label 'ec2-slave' }
+    agent { label 'dev' }
 
     environment {
-        ECR_REPO = 'your-ecr-repo-url'
+        ECR_REPO = '430006376054.dkr.ecr.eu-west-3.amazonaws.com/main/guy-repo'
         IMAGE_NAME = 'app-image'
         TAG = "${env.BRANCH_NAME}-${env.BUILD_ID}"
-        SSH_KEY = credentials('ec2-ssh-key')
+        SSH_KEY = credentials(root (ssh-agent))
     }
+}
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: "${env.BRANCH_NAME}", url: 'https://github.com/guillou73/assignment10.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build("${env.ECR_REPO}:${env.TAG}")
+                }
+            }
+        }
+
