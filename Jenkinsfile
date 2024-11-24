@@ -23,4 +23,33 @@ pipeline {
                 }
             }
         }
+stage('Push to ECR') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'aws-ecr', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    sh "aws ecr get-login-password --region eu-west-3 | docker login --username AWS --password-stdin ${env.ECR_REPO}"
+                    sh "docker push ${env.ECR_REPO}:${env.TAG}"
+                }
+            }
+            post {
+                success {
+                    // Send email notification after successful image push to ECR
+                    emailext(
+                        subject: "Jenkins Job - Docker Image Pushed to ECR Successfully",
+                        body: "Hello,\n\nThe Docker image '${env.IMAGE_NAME}:${env.TAG}' has been successfully pushed to ECR.\n\nBest regards,\nJenkins",
+                        recipientProviders: [[$class: 'DevelopersRecipientProvider']],
+                        to: "guymonthe2001@yahoo.fr"
+                    )
+                }
+            }
+        }
+
+        stage('Static Code Analysis - SonarQube') {
+            steps {
+                script {
+                    withSonarQubeEnv('SonarQubeServer') {
+                        sh 'mvn sonar-token:sonar-token'
+                    }
+                }
+            }
+        }
 
